@@ -4,7 +4,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 
-# dri081
 if __name__ == '__main__':
     # Cardmarket uses ids for languages
     languages = {
@@ -33,16 +32,22 @@ if __name__ == '__main__':
     option.add_argument("--no-sandbox")
     option.add_argument("--disable-dev-shm-usage")
     option.add_argument("--incognito")
-    driver = webdriver.Chrome(options=option)
+
+    print("Starting selenium...")
+    try:
+        driver = webdriver.Chrome(options=option)
+    except Exception as e:
+        print("Failed to start selenium!")
+        print(e)
+        exit(1)
+
+    print("Success")
 
     while True:
-        # Go to page
-        driver.get("https://www.cardmarket.com/en/Pokemon")
+        print()
 
-        print("Card ID:")
-        cardId = input()
-        print("Language (en, fr, de, sp, it, s-ch, ja, po, ko, t-ch):")
-        language = input()
+        cardId = input("Card ID:")
+        language = input("Language (en, fr, de, sp, it, s-ch, ja, po, ko, t-ch):")
 
         if(cardId == "" or language == ""):
             driver.close()
@@ -54,12 +59,15 @@ if __name__ == '__main__':
             print("Invalid language")
             continue
 
+        # Go to page
+        driver.get("https://www.cardmarket.com/en/Pokemon")
+
         # Find the search input and enter card id
         try:
             searchInput = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, f"//input[@id='ProductSearchInput']")))
         except:
             driver.save_screenshot("screenshot.png")
-            print("Page couldnt load (see screenshot for more details)")
+            print("Page couldn't load (see saved screenshot for more details)")
             driver.close()
             exit(1)
 
@@ -67,12 +75,7 @@ if __name__ == '__main__':
         searchInput.send_keys(Keys.ENTER)
 
         # Append language id to URL
-        try:
-            driver.get(driver.current_url + "?language=" + str(languageId))
-        except:
-            driver.save_screenshot("screenshot.png")
-            print("Language couldnt be selected! (see screenshot for more details)")
-            continue
+        driver.get(driver.current_url + "?language=" + str(languageId))
 
         # Grep the first entry in the table (default sorted by cheapest)
         try:
@@ -81,5 +84,5 @@ if __name__ == '__main__':
             print(price)
         except:
             driver.save_screenshot("screenshot.png")
-            print("No offers found! (see screenshot for more details)")
+            print("No offers found! (see saved screenshot for more details)")
             continue
